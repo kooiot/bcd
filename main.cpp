@@ -27,7 +27,7 @@ int main() {
 	temp[3] = 0x78;
 
 	int v = bcd::decode<int>(temp, "########", true);
-	assert(v == 87654321);
+	assert(v == 78563412);
 	v = bcd::decode<int>(temp, "########", false);
 	assert(v == 12345678);
 
@@ -38,17 +38,17 @@ int main() {
 	//std::cout << std::setprecision(10) << fv << std::endl;
 	assert(fv - 1234.567 < 0.0001);
 
-	fv = bcd::decode<double>(temp, "0#####.##", true);
+	fv = bcd::decode<double>(temp, "0####.###", true);
 	//std::cout << std::setprecision(10) << fv << std::endl;
-	assert(fv - 76543.21 < 0.0001);
-	fv = bcd::decode<double>(temp, "#####.##", true);
+	assert(fv - 8563.412 < 0.0001);
+	fv = bcd::decode<double>(temp, "####.###", true);
 	//std::cout << std::setprecision(10) << fv << std::endl;
-	assert(fv - 87654.32 < 0.0001);
+	assert(fv - 8765.432 < 0.0001);
 
 	unsigned char buf[4] = {0};
-	assert(4 == bcd::encode<int>(buf, 87654321, "########", true));
+	assert(4 == bcd::encode<int>(buf, 78563412, "########", true));
 	assert(memcmp(temp, buf, 4) == 0);
-	assert(4 == bcd::encode<double>(buf, 8765.4321, "####.####", true));
+	assert(4 == bcd::encode<double>(buf, 7856.3412, "####.####", true));
 	assert(memcmp(temp, buf, 4) == 0);
 
 	assert(4 == bcd::encode<int>(buf, 12345678, "########"));
@@ -56,32 +56,45 @@ int main() {
 	assert(4 == bcd::encode<double>(buf, 12345.678, "#####.###"));
 	assert(memcmp(temp, buf, 4) == 0);
 
+
+
+	assert(4 == bcd::encode<int>(buf, 12345678, "#######"));
+	assert(memcmp(temp + 1, buf + 1, 3) == 0);
+	assert(buf[0] == 0x02);
 	assert(4 == bcd::encode<int>(buf, 12345678, "#######0"));
 	assert(memcmp(temp, buf, 3) == 0);
 	assert(buf[3] == 0x70);
 
-	assert(4 == bcd::encode<int>(buf, 87654321, "#######0", true));
+	assert(4 == bcd::encode<int>(buf, 78563412, "#######", true));
+	assert(memcmp(temp, buf, 3) == 0);
+	assert(buf[3] == 0x08);
+	assert(4 == bcd::encode<int>(buf, 78563412, "#######0", true));
 	assert(memcmp(temp + 1, buf + 1, 3) == 0);
-	assert(buf[0] == 0x02);
-
-
-	/*
-	std::cout << memcmp(temp, buf, 4) << std::endl;
-	std::cout << std::hex;
-	for (int i = 0; i < 4; ++i) {
-		std::cout << (short)temp[i] << '\t' << (short)buf[i] << std::endl;
-	}
-	*/
+	assert(buf[0] == 0x10);
 
 
 	assert(4 == bcd::encode<double>(buf, 12345.678, "0####.###"));
 	assert(memcmp(temp + 1, buf + 1, 3) == 0);
-	//std::cout << std::hex << (short(buf[0]));
 	assert(buf[0] == 0x02);
+	assert(4 == bcd::encode<double>(buf, 12345.678, "#0###.###"));
+	assert(memcmp(temp + 1, buf + 1, 3) == 0);
+	assert(buf[0] == 0x10);
+	//std::cout << std::hex << (short(buf[0]));
 
-	assert(4 == bcd::encode<double>(buf, 87654.321, "0####.###", true));
+	assert(4 == bcd::encode<double>(buf, 78563.412, "0####.###", true));
+	assert(memcmp(temp, buf, 3) == 0);
+	assert(buf[3] == 0x08);
+	assert(4 == bcd::encode<double>(buf, 78563.412, "#0###.###", true));
 	assert(memcmp(temp, buf, 3) == 0);
 	assert(buf[3] == 0x70);
+
+	/* 
+	std::cout << memcmp(temp, buf, 4) << std::endl;
+	std::cout << std::hex;
+	for (int i = 0; i < 4; ++i) {
+		std::cout << (short)temp[i] << '\t' << (short)buf[i] << std::endl;
+	}*/
+
 
 	std::cout << "--------------------------------------" << std::endl;
 	std::cout << "| All tests run successfully" << std::endl;

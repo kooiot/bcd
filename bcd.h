@@ -17,7 +17,7 @@
 #include <cassert>
 #include <cmath>
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <iostream>
@@ -41,11 +41,8 @@ namespace bcd {
 			for (; i < count; ++i) {
 				// --- 
 				val = val * 100;	
-				if (!reverse) {
-					digit =  (src[i] & 0xF ) + ( (src[i] & 0xF0) >> 4) * 10;
-				} else {
-					digit =  (src[count - i - 1] & 0xF ) * 10 + ((src[count - i - 1] & 0xF0) >> 4);
-				}
+				int index = reverse ? count - i - 1 : i;
+				digit =  (src[index] & 0xF ) + ( (src[index] & 0xF0) >> 4) * 10;
 				val += digit;
 #ifdef DEBUG
 				std::cout << "digit\t" << digit << std::endl;
@@ -74,7 +71,7 @@ namespace bcd {
 				if (!reverse) {
 					temp[count - 1] = temp[count - 1] & 0xF0;
 				} else {
-					temp[0] = temp[0] & 0x0F;
+					temp[0] = temp[0] & 0xF0;
 				}
 			}
 
@@ -84,7 +81,7 @@ namespace bcd {
 				if (!reverse) {
 					temp[i / 2] = temp[i / 2] & (i % 2 == 0 ? 0x0F : 0xF0);
 				} else {
-					temp[count - i / 2 - 1] = temp[count - i / 2 - 1] & (i % 2 == 0 ? 0xF0 : 0x0F);
+					temp[count - i / 2 - 1] = temp[count - i / 2 - 1] & (i % 2 == 0 ? 0x0F : 0xF0);
 				}
 				pch = strchr(pch + 1, '0');
 			}
@@ -131,17 +128,21 @@ namespace bcd {
 			for (; i < count; ++i) {
 				// --- 
 				digit = val % 100;
-				if (!reverse) {
-					buf[count - i - 1] = digit % 10 + ((digit / 10) << 4);
-				} else {
-					buf[i] = ((digit % 10) << 4) + digit / 10;
-				}
+				buf[reverse ? i : count - i - 1] = digit % 10 + ((digit / 10) << 4);
 
 #ifdef DEBUG
 				std::cout << "digit\t" << digit << std::endl;
 				std::cout << "val\t" << std::setprecision(10) << val << std::endl;
 #endif
 				val = val / 100;	
+			}
+
+			if (fl % 2 == 1) {
+				if (!reverse) {
+					buf[0] = buf[0] & 0x0F;
+				} else {
+					buf[count - 1] = buf[count - 1] & 0x0F;
+				}
 			}
 
 			// Make the zeros
@@ -154,7 +155,7 @@ namespace bcd {
 					if (!reverse) {
 						buf[i / 2] &= (i % 2 == 0) ? 0x0F : 0xF0;
 					} else {
-						buf[count - (i / 2) - 1] &= (i % 2 == 1) ? 0x0F : 0xF0;
+						buf[count - (i / 2) - 1] &= (i % 2 == 1) ? 0xF0 : 0x0F;
 					}
 				}
 			}
